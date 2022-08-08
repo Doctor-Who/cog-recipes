@@ -42,7 +42,7 @@ combine **-addalpha -hidenodata** will set a transparency and avoid black or whi
 
 3. Translate to COG
 
-`gdal_translate 80_rvb_2021.vrt 2021_D80_Ortho_0m20_RVB_COG.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=90 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES`
+`gdal_translate my_orthophotography.vrt my_orthophotography_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=90 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES`
 
 ## Good practice
 
