@@ -32,13 +32,16 @@ Adjust NUM_THREAD to your hardware.
 1. Convert each JP2 to TIF
 
 Create a **0_TIF** directory and then go to inside the directory that contains JP2 files
+
 `for f in *.jp2; do gdal_translate -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=6 -co COMPRESS=ZSTD -co PREDICTOR=2 ${f} ../0_TIF/${f%.*}.tif; done`
+
 BLOCKXSIZE and BLOCKYSIZE is very important for next step. If you change these values, do same at step 3.
 
 2. Build VRT
 
 `gdalbuildvrt my_orthophotography.vrt 0_TIF/*.tif -addalpha -hidenodata -a_srs EPSG:2154`
-combine **-addalpha -hidenodata** will set a transparency and avoid black or white no data pixel around your area of interest.
+
+Combine **-addalpha -hidenodata** will set a transparency and avoid black or white no data pixel around your area of interest.
 
 3. Translate to COG
 
