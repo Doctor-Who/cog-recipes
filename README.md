@@ -17,9 +17,11 @@ Consider COG is generated from a mosaic from several tiles.
 ## 1 Band Raster : DSM in ASC format
 
 1. Build en VRT
+
 `gdalbuildvrt my_dsm.vrt -addalpha -a_srs EPSG:2154 /dsm_directory/*.asc`
 
 2. Translate to COG
+
 `gdal_translate my_dsm.vrt my_dsm_cog.tif -of COG -co RESAMPLING=BILINEAR -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED`
 
 RESAMPLING method can be adjust depending your usage.
@@ -34,10 +36,12 @@ Create a **0_TIF** directory and then go to inside the directory that contains J
 BLOCKXSIZE and BLOCKYSIZE is very important for next step. If you change these values, do same at step 3.
 
 2. Build VRT
+
 `gdalbuildvrt my_orthophotography.vrt 0_TIF/*.tif -addalpha -hidenodata -a_srs EPSG:2154`
 combine **-addalpha -hidenodata** will set a transparency and avoid black or white no data pixel around your area of interest.
 
 3. Translate to COG
+
 `gdal_translate 80_rvb_2021.vrt 2021_D80_Ortho_0m20_RVB_COG.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=90 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES`
 
 ## Good practice
