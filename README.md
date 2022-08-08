@@ -1,8 +1,9 @@
-# GDAL Cheat Sheet for COG (Cloud Optimized GeoTIFF)
+# GDAL CheatSheet for COG (Cloud Optimized GeoTIFF)
 
 ## Requirements
 
 GDAL version >= 3.1
+
 COG driver documentation : https://gdal.org/drivers/raster/cog.html
 
 ## Use cases
@@ -22,7 +23,7 @@ Consider COG is generated from a mosaic from several tiles.
 
 2. Translate to COG
 
-`gdal_translate my_dsm.vrt my_dsm_cog.tif -of COG -co RESAMPLING=BILINEAR -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED`
+`gdal_translate my_dsm.vrt my_dsm_output_cog.tif -of COG -co RESAMPLING=BILINEAR -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED`
 
 RESAMPLING method can be adjust depending your usage.
 Adjust NUM_THREAD to your hardware.
@@ -33,9 +34,9 @@ Adjust NUM_THREAD to your hardware.
 
 Create a **0_TIF** directory and then go to inside the directory that contains JP2 files
 
-`for f in *.jp2; do gdal_translate -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=6 -co COMPRESS=ZSTD -co PREDICTOR=2 ${f} ../0_TIF/${f%.*}.tif; done`
+`for f in *.jp2; do gdal_translate -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=20 -co COMPRESS=ZSTD -co PREDICTOR=2 ${f} ../0_TIF/${f%.*}.tif; done`
 
-BLOCKXSIZE and BLOCKYSIZE is very important for next step. If you change these values, do same at step 3.
+**BLOCKXSIZE** and **BLOCKYSIZE** is very important for next step. If you change these values, do same at step 3.
 
 2. Build VRT
 
@@ -45,13 +46,14 @@ Combine **-addalpha -hidenodata** will set a transparency and avoid black or whi
 
 3. Translate to COG
 
-`gdal_translate my_orthophotography.vrt my_orthophotography_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=90 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES`
+`gdal_translate my_orthophotography.vrt my_orthophotography_output_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=90 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES`
 
 ## Good practice
 
 JPG offer most weight to performance ratio.
 As JP2 is already compress, to avoid image degradation, compression is quite low.
 If you start from native TIF, then adjust around 75-80 compression QUALITY.
+
 RESAMPLING method depending of user choice but BILINEAR offer beautiful rendering.
 
 ## 4 Band and up or 16 bits images
