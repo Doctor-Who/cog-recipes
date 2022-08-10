@@ -15,7 +15,7 @@ Improve network performance to display as fast as possible large raster in GIS s
 Try to streamline disk usage instead of raw raster + raster tiles.
 Consider COG is generated from a mosaic from several tiles.
 
-## 1 Band Raster : DSM in ASC format
+## Raster with 1 band : DSM in ASC format
 
 1. Build en VRT
 
@@ -28,7 +28,7 @@ Consider COG is generated from a mosaic from several tiles.
 RESAMPLING method can be adjust depending your usage.
 Adjust NUM_THREAD to your hardware.
 
-## 3 Band Raster
+## Raster with 3 bands
 
 1. Convert each JP2 to TIF
 
@@ -46,12 +46,12 @@ Combine **-addalpha -hidenodata** will set a transparency and avoid black or whi
 
 3. Translate to COG
 
-`gdal_translate my_orthophotography.vrt my_orthophotography_output_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=90 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES`
+`gdal_translate my_orthophotography.vrt my_orthophotography_output_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=85 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES`
 
-## Good practice
+## Good practices
 
 JPG offer most weight to performance ratio.
-As JP2 is already compress, to avoid image degradation, compression is quite low.
+As JP2 is already compress, to avoid image degradation, compression is quite low 85~90.
 If you start from native TIF, then adjust around 75-80 compression QUALITY.
 
 RESAMPLING method depending of user choice but BILINEAR offer beautiful rendering.
