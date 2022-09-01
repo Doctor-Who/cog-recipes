@@ -19,13 +19,13 @@ Consider COG is generated from a mosaic from several tiles.
 
 1. Build en VRT
 
-```bash
+```console
 gdalbuildvrt my_dsm.vrt -addalpha -a_srs EPSG:2154 /dsm_directory/*.asc
 ```
 
 2. Translate to COG
 
-```bash
+```console
 gdal_translate my_dsm.vrt my_dsm_output_cog.tif -of COG -co RESAMPLING=BILINEAR -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED
 ```
 
@@ -38,7 +38,7 @@ Adjust NUM_THREAD to your hardware.
 
 Create a **0_TIF** directory and then go to inside the directory that contains JP2 files
 
-```bash
+```console
 for f in *.jp2; do gdal_translate -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=20 -co COMPRESS=ZSTD -co PREDICTOR=2 ${f} ../0_TIF/${f%.*}.tif; done
 ```
 
@@ -46,7 +46,7 @@ for f in *.jp2; do gdal_translate -of GTiff -co TILED=YES -co BIGTIFF=YES -co BL
 
 2. Build VRT
 
-```bash
+```console
 gdalbuildvrt my_orthophotography.vrt 0_TIF/*.tif -addalpha -hidenodata -a_srs EPSG:2154
 ```
 
@@ -54,7 +54,7 @@ Combine **-addalpha -hidenodata** will set a transparency and avoid black or whi
 
 3. Translate to COG
 
-```bash
+```console
 gdal_translate my_orthophotography.vrt my_orthophotography_output_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=85 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES
 ```
 
