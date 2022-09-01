@@ -67,6 +67,7 @@ If you start from native TIF, then adjust around 75-80 compression QUALITY.
 RESAMPLING method depending of user choice but BILINEAR offer beautiful rendering.
 
 :warning: For image processing (classification, segmentation, viewhed, etc.) use instead NEAREST to avoid pixels values alteration. :warning:
+(:pray: thanks to @vincentsarago for this advice)
 
 ## 4 Band and up or 16 bits images
 
