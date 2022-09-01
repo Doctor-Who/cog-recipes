@@ -15,38 +15,48 @@ Improve network performance to display as fast as possible large raster in GIS s
 Try to streamline disk usage instead of raw raster + raster tiles.
 Consider COG is generated from a mosaic from several tiles.
 
-## Raster with 1 band : DSM in ASC format
+## Raster with 1 band : DSM or DEM in ASC format for example
 
 1. Build en VRT
 
-`gdalbuildvrt my_dsm.vrt -addalpha -a_srs EPSG:2154 /dsm_directory/*.asc`
+```bash
+gdalbuildvrt my_dsm.vrt -addalpha -a_srs EPSG:2154 /dsm_directory/*.asc
+```
 
 2. Translate to COG
 
-`gdal_translate my_dsm.vrt my_dsm_output_cog.tif -of COG -co RESAMPLING=BILINEAR -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED`
+```bash
+gdal_translate my_dsm.vrt my_dsm_output_cog.tif -of COG -co RESAMPLING=BILINEAR -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED
+```
 
 RESAMPLING method can be adjust depending your usage.
 Adjust NUM_THREAD to your hardware.
 
-## Raster with 3 bands
+## Raster with 3 bands : Orthoimagery
 
 1. Convert each JP2 to TIF
 
 Create a **0_TIF** directory and then go to inside the directory that contains JP2 files
 
-`for f in *.jp2; do gdal_translate -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=20 -co COMPRESS=ZSTD -co PREDICTOR=2 ${f} ../0_TIF/${f%.*}.tif; done`
+```bash
+for f in *.jp2; do gdal_translate -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=20 -co COMPRESS=ZSTD -co PREDICTOR=2 ${f} ../0_TIF/${f%.*}.tif; done
+```
 
 **BLOCKXSIZE** and **BLOCKYSIZE** is very important for next step. If you change these values, do same at step 3.
 
 2. Build VRT
 
-`gdalbuildvrt my_orthophotography.vrt 0_TIF/*.tif -addalpha -hidenodata -a_srs EPSG:2154`
+```bash
+gdalbuildvrt my_orthophotography.vrt 0_TIF/*.tif -addalpha -hidenodata -a_srs EPSG:2154
+```
 
 Combine **-addalpha -hidenodata** will set a transparency and avoid black or white no data pixel around your area of interest.
 
 3. Translate to COG
 
-`gdal_translate my_orthophotography.vrt my_orthophotography_output_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=85 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES`
+```bash
+gdal_translate my_orthophotography.vrt my_orthophotography_output_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=85 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES
+```
 
 ## Good practices
 
@@ -56,9 +66,11 @@ If you start from native TIF, then adjust around 75-80 compression QUALITY.
 
 RESAMPLING method depending of user choice but BILINEAR offer beautiful rendering.
 
+:warning: For image processing (classification, segmentation, viewhed, etc.) use instead NEAREST to avoid pixels values alteration. :warning:
+
 ## 4 Band and up or 16 bits images
 
-:warning: Cannot use JPG compression as is is limited to 3 Band (RGB)
+Cannot use JPG compression as is is limited to 3 Band (RGB) use DEFLATE (safer - most compatible) or ZSTD (more efficient but less compatible with other GIS application)
 
 ## Known issue
 
