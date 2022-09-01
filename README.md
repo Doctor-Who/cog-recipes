@@ -26,7 +26,7 @@ gdalbuildvrt my_dsm.vrt -addalpha -a_srs EPSG:2154 /dsm_directory/*.asc
 2. Translate to COG
 
 ```bash
-gdal_translate my_dsm.vrt my_dsm_output_cog.tif -of COG -co RESAMPLING=BILINEAR -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED
+gdal_translate my_dsm.vrt my_dsm_output_cog.tif -of COG -co RESAMPLING=NEAREST -co OVERVIEW_RESAMPLING=NEAREST -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED
 ```
 
 RESAMPLING method can be adjust depending your usage.
@@ -66,7 +66,7 @@ If you start from native TIF, then adjust around 75-80 compression QUALITY.
 
 RESAMPLING method depending of user choice but BILINEAR offer beautiful rendering.
 
-:warning: For image processing (classification, segmentation, viewhed, etc.) use instead NEAREST to avoid pixels values alteration. :warning:
+:warning: For image processing (classification, segmentation, viewshed, etc.) use instead NEAREST to avoid pixels values alteration. :warning:
 (:pray: thanks to @vincentsarago for this advice)
 
 ## 4 Band and up or 16 bits images
