@@ -1,5 +1,7 @@
 # GDAL CheatSheet for COG (Cloud Optimized GeoTIFF)
 
+:fr: french version >>> <https://github.com/geo2france/cog-tips>
+
 ## Requirements
 
 GDAL version >= 3.1
