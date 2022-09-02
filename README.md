@@ -60,11 +60,10 @@ gdal_translate my_orthophotography.vrt my_orthophotography_output_cog.tif -of CO
 
 ## Good practices
 
-JPG offer most weight to performance ratio.
-As JP2 is already compress, to avoid image degradation, compression is quite low 85~90.
-If you start from native TIF, then adjust around 75-80 compression QUALITY.
-
-RESAMPLING method depending of user choice but BILINEAR offer beautiful rendering.
+- JPG offer most weight to performance ratio.
+- As JP2 is already compress, to avoid image degradation, compression is quite low 85~90.
+- If you start from native TIF, then adjust around 75-80 compression QUALITY.
+- RESAMPLING method depending of user choice but BILINEAR offer beautiful rendering.
 
 :warning: For image processing (classification, segmentation, viewshed, etc.) use instead NEAREST to avoid pixels values alteration. :warning:
 (:pray: thanks to @vincentsarago for this advice)
