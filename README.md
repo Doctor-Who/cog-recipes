@@ -17,70 +17,142 @@ Improve network performance to display as fast as possible large raster in GIS s
 Try to streamline disk usage instead of raw raster + raster tiles.
 Consider COG is generated from a mosaic from several tiles.
 
-## Raster with 1 band : DSM or DEM in ASC format for example
+## Single-band Raster: DTM, DSM in ASC format for example
 
-1. Build en VRT
+1. Build the VRT
+
+**Linux**
 
 ```bash
 gdalbuildvrt my_dsm.vrt -addalpha -a_srs EPSG:2154 /dsm_directory/*.asc
 ```
 
-2. Translate to COG
+**Windows**
 
-```bash
-gdal_translate my_dsm.vrt my_dsm_output_cog.tif -of COG -co RESAMPLING=NEAREST -co OVERVIEW_RESAMPLING=NEAREST -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED
+```batch
+gdalbuildvrt.exe C:\dsm\my_dsm.vrt C:\dsm_directory\*.asc -addalpha -hidenodata -a_srs EPSG:2154
 ```
 
-RESAMPLING method can be adjust depending your usage.
-Adjust NUM_THREAD to your hardware.
+2. Convert to COG
 
-## Raster with 3 bands : Orthoimagery
+**Linux**
 
-1. Convert each JP2 to TIF
+```bash
+gdal_translate input_dsm.vrt my_dsm_output_cog.tif -of COG -co RESAMPLING=NEAREST  -co OVERVIEW_RESAMPLING=NEAREST -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED
+```
 
-Create a **0_TIF** directory and then go to inside the directory that contains JP2 files
+**Windows**
+
+```batch
+ggdal_translate.exe C:\dsm\input_dsm.vrt C:\dsm\my_dsm_output_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=NEAREST -co COMPRESS=DEFLATE -co PREDICTOR=2 -co NUM_THREADS=20 -co BIGTIFF=IF_NEEDED
+```
+
+**RESAMPLING** = resampling method that can be adjusted based on your needs.
+Adjust the NUM_THREAD parameter according to your machine.
+
+## 3-band Raster: Orthoimagery
+
+1. Convert each JP2 tile to TIF
+
+Create a directory **0_TIF** and navigate to it containing the JP2 files before running the following command:
+
+**Linux**
 
 ```bash
 for f in *.jp2; do gdal_translate -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=20 -co COMPRESS=ZSTD -co PREDICTOR=2 ${f} ../0_TIF/${f%.*}.tif; done
 ```
 
-**BLOCKXSIZE** and **BLOCKYSIZE** is very important for next step. If you change these values, do same at step 3.
+**Windows**
 
-2. Build VRT
+```batch
+FOR %%F IN (C:\ortho\jpg2\*.jp2) DO gdal_translate.exe -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=ALL_CPUS -co COMPRESS=ZSTD -co PREDICTOR=2 -a_srs EPSG:2154 %%F C:\ortho\0_TIF\%%~nxF.tif
+```
+
+**BLOCKXSIZE** and **BLOCKYSIZE** are crucial for the following steps. If you change these values, do the same in step 3.
+
+2. Build the VRT
+
+**Linux**
 
 ```bash
 gdalbuildvrt my_orthophotography.vrt 0_TIF/*.tif -addalpha -hidenodata -a_srs EPSG:2154
 ```
 
-Combine **-addalpha -hidenodata** will set a transparency and avoid black or white no data pixel around your area of interest.
+**Windows**
 
-3. Translate to COG
+```batch
+gdalbuildvrt.exe C:\ortho\my_orthophotography.vrt C:\ortho\0_TIF\*.tif -addalpha -hidenodata -a_srs EPSG:2154
+```
+
+Combine the options **-addalpha -hidenodata** to set nodata as transparent (avoids black or white borders around the mosaic)
+
+3. Convert to COG
+
+**Linux**
 
 ```bash
 gdal_translate my_orthophotography.vrt my_orthophotography_output_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=85 -co NUM_THREADS=ALL_CPUS -co BIGTIFF=YES
 ```
 
-## Good practices
+**Windows**
 
-- JPG offer most weight to performance ratio.
-- As JP2 is already compress, to avoid image degradation, compression is quite low 85~90.
-- If you start from native TIF, then adjust around 75-80 compression QUALITY.
-- RESAMPLING method depending of user choice but BILINEAR offer beautiful rendering.
+```batch
+gdal_translate.exe C:\ortho\my_orthophotography.vrt C:\ortho\my_orthophotography_output_cog.tif -of COG -co BLOCKSIZE=512 -co OVERVIEW_RESAMPLING=BILINEAR -co COMPRESS=JPEG -co QUALITY=85 -co NUM_THREADS=12 -co BIGTIFF=YES
+```
 
-:warning: For image processing (classification, segmentation, viewshed, etc.) use instead NEAREST to avoid pixels values alteration. :warning:
-(:pray: thanks to @vincentsarago for this advice)
+## Special Cases
 
-## 4 Band and up or 16 bits images
+Thanks :pray: to @bchartier for these contributions as well as the commands for Windows.
 
-Cannot use JPG compression as is is limited to 3 Band (RGB) use DEFLATE (safer - most compatible) or ZSTD (more efficient but less compatible with other GIS application)
+### Cropping an Image Based on a Contour (before converting to COG)
 
-## Known issue
+If you have white or black pixels outside your image that are not designated as _nodata_, you can crop your images based on a contour layer.
 
-- Use **gdalbuildvrt** and then **gdal_translate** is much more efficient than using **gdalwarp**
+**Linux**
 
-- Without any proprietary JP2 driver (ERDAS, KAKADU) you must first decompress each file to TIF and then build the COG file.
-If you do not, there may be artefacts or corrupted pixels on large dataset with the OpenJP2 driver.
+```bash
+gdalwarp -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=12 -co COMPRESS=ZSTD -co PREDICTOR=2 -s_srs EPSG:2154 -t_srs EPSG:2154 -dstalpha -cutline area_of_interest.shp input_image.jp2 image_output.tif
+```
 
-- A COG is bigger file than JP2 or ECW format but completely readable without any proprietary and faster.
+**Windows**
 
-- There is more efficient compression type in GDAL than DEFLATE for exemple ZSTD or JXL but some GIS server or GIS desktop software could be not able to read it.
+```batch
+gdalwarp.exe -of GTiff -co TILED=YES -co BIGTIFF=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=12 -co COMPRESS=ZSTD -co PREDICTOR=2 -s_srs EPSG:2154 -t_srs EPSG:2154 -dstalpha -cutline C:\data\area_of_interest.shp C:\ortho\input_image.jp2 C:\ortho\image_output.tif
+```
+
+### Converting a JP2 Image to RGBA Encoded TIFF (before converting to COG)
+
+**Linux**
+
+```bash
+gdal_translate -of GTiff -co BIGTIFF=YES -co TILED=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=12 -co COMPRESS=ZSTD -co PREDICTOR=2 -b 1 -b 2 -b 3 -b mask -colorinterp red,green,blue,alpha -a_srs EPSG:2154 input_image.jp2 output_image.tif
+```
+
+**Windows**
+
+```batch
+gdal_translate.exe -of GTiff -co BIGTIFF=YES -co TILED=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=12 -co COMPRESS=ZSTD -co PREDICTOR=2 -b 1 -b 2 -b 3 -b mask -colorinterp red,green,blue,alpha -a_srs EPSG:2154 C:\ortho\input_image.jp2 C:\ortho\output_image.jp2
+```
+
+## Best Practices
+
+- JPG compression offers the best weight/performance ratio (lossy compression).
+- JP2 is already a compressed format (potentially lossy depending on the codec used), set a moderate compression between 85-90 to avoid degrading the image.
+- If you have raw source files (TIF), you can set a stronger compression of 75-80 in the QUALITY parameter.
+- The RESAMPLING parameter depends on your choices or users. From our experience, BILINEAR provides the best visual output.
+
+:warning: If you are performing image processing tasks (classification, segmentation, visibility calculation, etc.), opt for NEAREST to prevent alteration of pixel values during resampling. (:pray: Thanks to @vincentsarago for the advice)
+
+## Images with 4 bands or more / 16-bit images
+
+JPG compression is limited to 3 bands (RGB), use DEFLATE (safer and more compatible) or ZSTD (more efficient but may have compatibility issues with other GIS components depending on GDAL compilation methods).
+
+## Known Issues
+
+- Using **gdalbuildvrt** followed by **gdal_translate** is faster than using **gdalwarp**.
+
+- Without proprietary JP2 codecs (ERDAS, KAKADU), you must first decompress each JP2 into TIF and then build the VRT to convert it into COG. Failure to do so may result in artifacts or corrupted pixels on large datasets with the OpenJP2 driver.
+
+- A COG file will be larger than a JP2 or ECW but faster to read and more interoperable without client or server-side proprietary components.
+
+- There are more efficient compression methods than DEFLATE such as ZSTD or JPEG-XL, but not all GIS applications (desktop or server) will be able to read them.
