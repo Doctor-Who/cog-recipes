@@ -30,7 +30,7 @@ gdalbuildvrt my_dsm.vrt -addalpha -a_srs EPSG:2154 /dsm_directory/*.asc
 **Windows**
 
 ```batch
-gdalbuildvrt.exe C:\dsm\my_dsm.vrt C:\dsm_directory\*.asc -addalpha -hidenodata -a_srs EPSG:2154
+gdalbuildvrt.exe C:\dsm\my_dsm.vrt C:\dsm_directory\*.asc -addalpha -a_srs EPSG:2154
 ```
 
 2. Convert to COG
