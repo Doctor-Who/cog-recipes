@@ -131,7 +131,7 @@ gdal_translate -of GTiff -co BIGTIFF=YES -co TILED=YES -co BLOCKXSIZE=512 -co BL
 **Windows**
 
 ```batch
-gdal_translate.exe -of GTiff -co BIGTIFF=YES -co TILED=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=12 -co COMPRESS=ZSTD -co PREDICTOR=2 -b 1 -b 2 -b 3 -b mask -colorinterp red,green,blue,alpha -a_srs EPSG:2154 C:\ortho\input_image.jp2 C:\ortho\output_image.jp2
+gdal_translate.exe -of GTiff -co BIGTIFF=YES -co TILED=YES -co BLOCKXSIZE=512 -co BLOCKYSIZE=512 -co NUM_THREADS=12 -co COMPRESS=ZSTD -co PREDICTOR=2 -b 1 -b 2 -b 3 -b mask -colorinterp red,green,blue,alpha -a_srs EPSG:2154 C:\ortho\input_image.jp2 C:\ortho\output_image.tif
 ```
 
 ## Best Practices
